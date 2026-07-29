@@ -21,9 +21,9 @@ Pure explanations, conceptual discussion, clarifying questions, and comparisons 
 
 Before any action, send one concise confirmation message containing:
 
-- `意图理解：` Restate the requested outcome and important constraints.
-- `想法：` Give a brief plan, recommendation, trade-off, or notable risk.
-- A direct question such as `是否开始执行？`
+- `Intent understood:` Restate the requested outcome and important constraints.
+- `Plan:` Give a brief plan, recommendation, trade-off, or notable risk.
+- A direct question such as `Should I start?`
 
 End that turn after asking. Do not call tools or begin the operation in the same turn.
 
@@ -31,14 +31,14 @@ End that turn after asking. Do not call tools or begin the operation in the same
 
 Treat these short replies as authorization to execute the most recently confirmed scope:
 
-- `开始`
-- `继续`
-- `同意`
-- `可以`
-- `执行`
-- `确认`
-- `好的`
-- `是的`
+- `start`
+- `continue`
+- `agree`
+- `yes`
+- `proceed`
+- `confirm`
+- `okay`
+- `sure`
 
 Do not treat a vague acknowledgment, discussion, plan adjustment, or statement of awareness as authorization.
 
@@ -46,7 +46,7 @@ Do not treat a vague acknowledgment, discussion, plan adjustment, or statement o
 
 If the user changes, adds to, or materially narrows the request before confirming, discard the pending confirmation and ask again for the new scope.
 
-Treat `停止`, `取消`, and `不用了` as withdrawal. Do not execute the pending request.
+Treat `stop`, `cancel`, and `no need` as withdrawal. Do not execute the pending request.
 
 If the user changes scope after authorization, pause and confirm the new scope before acting on it.
 
@@ -63,9 +63,9 @@ For long or interruption-prone work, pair this gate with a durable task-progress
 Use a short format such as:
 
 ```text
-意图理解：我会读取并分析指定项目，输出功能、风险和适用性结论。
-想法：我会先检查项目结构和文档，再验证关键结论；不会修改文件。
-是否开始执行？
+Intent understood: I will inspect and analyze the specified project, then report its features, risks, and suitability.
+Plan: I will inspect the project structure and documentation first, then verify important conclusions without modifying files.
+Should I start?
 ```
 
 Do not add implementation details or progress updates before the user answers.

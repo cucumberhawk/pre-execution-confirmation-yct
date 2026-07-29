@@ -22,14 +22,14 @@ Benefits:
 For an action request, the agent must first reply with:
 
 ```text
-意图理解：复述请求的目标和重要约束。
-想法：说明计划、建议、权衡或风险。
-是否开始执行？
+Intent understood: Restate the requested outcome and important constraints.
+Plan: Explain the plan, recommendation, trade-offs, or risks.
+Should I start?
 ```
 
-The agent must wait for an explicit approval such as `开始`, `继续`, `同意`, `可以`, `执行`, `确认`, `好的`, or `是的`.
+The agent must wait for an explicit approval such as `start`, `continue`, `agree`, `yes`, `proceed`, `confirm`, `okay`, or `sure`.
 
-The agent must ask again if the user changes the scope before approval. `停止`, `取消`, and `不用了` withdraw the pending request.
+The agent must ask again if the user changes the scope before approval. `stop`, `cancel`, and `no need` withdraw the pending request.
 
 After approval, context compression, summary recovery, model changes, and environment metadata do not revoke authorization for the already-approved scope.
 
@@ -72,13 +72,13 @@ The confirmation Skill answers **"Has the user authorized this action?"**. A tas
 
 ### Action request
 
-User: `检查这个项目并修复首页问题。`
+User: `Inspect this project and fix the homepage issues.`
 
 Agent: ask for confirmation first, then wait.
 
 ### Pure explanation
 
-User: `为什么这个错误会出现？`
+User: `Why does this error occur?`
 
 Agent: explain the cause directly; no execution gate is needed unless the user asks for a change.
 
