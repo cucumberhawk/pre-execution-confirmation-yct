@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pre-Execution Confirmation YCT"
+  short_description: "Require explicit user approval before agent actions"
+  default_prompt: "Use $pre-execution-confirmation-yct before taking any user-requested action."
