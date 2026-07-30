@@ -1,15 +1,16 @@
 # pre-execution-confirmation-yct
 
-An open, cross-agent confirmation gate for AI coding assistants. It requires the user to explicitly approve an action before the agent calls tools, reads or changes files, browses, searches, generates deliverables, sends messages, installs software, deletes data, or creates tasks.
+An open, cross-agent confirmation gate for AI coding assistants. After receiving an instruction, the agent first restates what the user asked for and explains its own understanding before touching the code. This catches misunderstandings early, reduces rework, and helps prevent the frustration of discovering at the end of a long task that the AI misunderstood the request from the beginning.
 
 ## Why use it?
 
-AI coding agents can understand a request correctly and still begin acting before the user has approved the plan. This Skill separates **understanding** from **execution**.
+AI coding agents can begin changing a project based on a mistaken interpretation of the request. The real cost often appears much later: a long task is finished, only to reveal that the agent misunderstood the user's intent from the start. This Skill creates a deliberate boundary between **understanding** and **execution**.
 
 Benefits:
 
 - Prevents accidental file changes, deletion, installation, publishing, or deployment.
-- Makes the requested scope visible before work starts.
+- Makes the agent's interpretation visible before work starts.
+- Gives the user an opportunity to correct misunderstandings before code is changed.
 - Gives the user one clear approval point for consequential operations.
 - Reduces ambiguity when a message mixes discussion and execution.
 - Preserves authorization after context compression or a model handoff.
