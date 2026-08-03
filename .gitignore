@@ -1,0 +1,14 @@
+# Local credentials and sensitive configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+AGENTS.md.backup.*
+
+# Local tool caches and generated Python files
+.codex/
+__pycache__/
+*.py[cod]
