@@ -1,29 +1,29 @@
 <!-- BEGIN CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->
-## 执行前确认规则
+## Pre-Execution Confirmation Rule
 
-对于每个要求代理执行操作的新用户请求，代理必须先发送一条简洁确认消息，包含：
+For every new user request that asks the agent to perform an action, the agent must first send one concise confirmation message containing:
 
-- `意图理解：` 复述用户期望的结果和重要约束。
-- `想法：` 简述计划、建议、权衡或重要风险。
-- `是否开始执行？`
+- `Intent understood:` Restate the requested outcome and important constraints.
+- `Plan:` Briefly explain the plan, recommendation, trade-offs, or important risks.
+- `Should I start?`
 
-在用户明确确认前，代理不得调用工具、读取或修改文件、搜索、浏览、生成交付物、发送消息、创建任务，或以其他方式开始执行。确认消息发送后必须暂停当前轮次。
+Before the user explicitly confirms, the agent must not call tools, read or modify files, search, browse, generate deliverables, send messages, create tasks, or otherwise begin execution. After sending the confirmation message, the agent must stop the current turn.
 
-简写规则：确认前不得调用工具、读写文件、搜索、浏览、生成交付物、发送消息或创建任务。
+Short form: Before confirmation, do not call tools, read or write files, search, browse, generate deliverables, send messages, or create tasks.
 
-以下明确肯定指令授权执行最近一次已确认的请求：
+The following explicit replies authorize execution of the most recently confirmed request:
 
-`开始`、`继续`、`同意`、`可以`、`执行`、`确认`、`好的`、`是的`
+`start`, `continue`, `agree`, `yes`, `proceed`, `confirm`, `okay`, `sure`
 
-以下指令撤回待执行请求：
+The following replies withdraw a pending request:
 
-`停止`、`取消`、`不用了`
+`stop`, `cancel`, `no need`
 
-如果用户在确认前修改、增加或实质性缩小请求，代理必须丢弃之前的确认内容，重新发送“意图理解”和“想法”，再次等待确认。
+If the user changes, expands, or materially narrows the request before confirmation, the agent must discard the previous confirmation, restate the new intent and plan, and ask again.
 
-如果用户在执行中改变目标、项目、账号、环境或其他外部对象范围，代理必须暂停并重新确认新增范围，不得把原授权自动扩大。
+If the user changes the target, project, account, environment, or other external scope during execution, the agent must pause and confirm the added scope. The agent must not infer authorization from one project to another.
 
-确认后，上下文压缩、摘要恢复、模型切换或环境信息注入不会自动撤销授权。只有用户发送新的消息，才能重定向、暂停、取消、缩小或扩大当前任务。
+After confirmation, context compression, summary recovery, model changes, and environment metadata do not automatically revoke authorization for the approved scope. Only a new user message can redirect, pause, cancel, narrow, or expand the current task.
 
-规则不扩大项目、账号、环境或外部对象范围。代理仍必须保留用户改动，不显示、复制或提交密码、Token、API Key、Cookie、私钥或其他秘密，并在破坏性、凭据、服务器、部署和隐私敏感操作前确认精确目标与范围。
+The rule does not expand project, account, environment, or external-object scope. The agent must preserve user changes and unrelated files, and must not display, copy, or commit passwords, tokens, API keys, cookies, private keys, or other secrets. Destructive, credential, server, deployment, and privacy-sensitive actions require confirmation of the exact target and scope.
 <!-- END CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->

@@ -24,7 +24,7 @@ function Resolve-CodexHome {
 
     $userProfile = [Environment]::GetFolderPath("UserProfile")
     if ([string]::IsNullOrWhiteSpace($userProfile)) {
-        throw "无法确定当前用户目录。"
+        throw "Unable to determine the current user profile."
     }
 
     return (Join-Path $userProfile ".codex")
@@ -42,77 +42,78 @@ $targetPath = Join-Path (Resolve-CodexHome -RequestedHome $CodexHome) "AGENTS.md
 $blockPattern = "(?s)" + [regex]::Escape($startMarker) + ".*?" + [regex]::Escape($endMarker)
 
 if (-not (Test-Path -LiteralPath $templatePath -PathType Leaf)) {
-    Add-Failure "缺少模板文件。"
+    Add-Failure "Template file is missing."
 }
 else {
     $templateContent = [System.IO.File]::ReadAllText($templatePath, $utf8Strict)
     $templateMatches = [regex]::Matches($templateContent, $blockPattern)
     if ($templateMatches.Count -ne 1) {
-        Add-Failure "模板规则区块数量不是 1。"
+        Add-Failure "The template does not contain exactly one rule block."
     }
 }
 
 if (-not (Test-Path -LiteralPath $skillPath -PathType Leaf)) {
-    Add-Failure "缺少 Skill 文件。"
+    Add-Failure "Skill file is missing."
 }
 else {
     $skillContent = [System.IO.File]::ReadAllText($skillPath, $utf8Strict)
     $skillRequirements = @(
-        "# 执行前确认",
-        "## 强制确认格式",
-        "## 确认前禁止事项",
-        "## 授权与撤回",
-        "## 范围变化",
-        "## 授权持续时间",
-        "意图理解：",
-        "想法：",
-        "是否开始执行？",
-        "开始、继续、同意、可以、执行、确认、好的、是的",
-        "停止、取消、不用了",
-        "上下文压缩、摘要恢复、模型切换"
+        "# Pre-Execution Confirmation YCT",
+        "## When to Use",
+        "## Mandatory Confirmation Format",
+        "## Prohibited Before Confirmation",
+        "## Authorization and Withdrawal",
+        "## Scope Changes",
+        "## Authorization Persistence",
+        "Intent understood:",
+        "Plan:",
+        "Should I start?",
+        "start, continue, agree, yes, proceed, confirm, okay, sure",
+        "stop, cancel, no need",
+        "Context compression, summary recovery, model changes"
     )
 
     foreach ($requirement in $skillRequirements) {
         if (-not $skillContent.Contains($requirement)) {
-            Add-Failure "Skill 缺少要求：$requirement"
+            Add-Failure "The Skill is missing this requirement: $requirement"
         }
     }
 }
 
 if (-not (Test-Path -LiteralPath $targetPath -PathType Leaf)) {
-    Add-Failure "未找到用户级 AGENTS.md：$targetPath"
+    Add-Failure "User-level AGENTS.md was not found: $targetPath"
 }
 else {
     $targetContent = [System.IO.File]::ReadAllText($targetPath, $utf8Strict)
     $targetMatches = [regex]::Matches($targetContent, $blockPattern)
 
     if ($targetMatches.Count -eq 0) {
-        Add-Failure "用户级 AGENTS.md 中不存在执行前确认规则区块。"
+        Add-Failure "The user-level AGENTS.md does not contain the pre-execution confirmation rule block."
     }
     elseif ($targetMatches.Count -gt 1) {
-        Add-Failure "用户级 AGENTS.md 中存在重复规则区块。"
+        Add-Failure "The user-level AGENTS.md contains duplicate rule blocks."
     }
     else {
         $ruleBlock = $targetMatches[0].Value
         $ruleRequirements = @(
-            "意图理解：",
-            "想法：",
-            "是否开始执行？",
-            "确认前不得调用工具、读写文件、搜索、浏览、生成交付物、发送消息或创建任务",
-            "用户在确认前修改、增加或实质性缩小请求",
-            "如果用户在执行中改变目标、项目、账号、环境或其他外部对象范围",
-            "上下文压缩、摘要恢复、模型切换"
+            "Intent understood:",
+            "Plan:",
+            "Should I start?",
+            "Before confirmation, do not call tools, read or write files, search, browse, generate deliverables, send messages, or create tasks",
+            "If the user changes, expands, or materially narrows the request before confirmation",
+            "If the user changes the target, project, account, environment, or other external scope during execution",
+            "Context compression, summary recovery, model changes"
         )
 
         foreach ($requirement in $ruleRequirements) {
             if (-not $ruleBlock.Contains($requirement)) {
-                Add-Failure "用户级规则缺少要求：$requirement"
+                Add-Failure "The user-level rule is missing this requirement: $requirement"
             }
         }
 
-        foreach ($authorizationWord in @("开始", "继续", "同意", "可以", "执行", "确认", "好的", "是的", "停止", "取消", "不用了")) {
+        foreach ($authorizationWord in @("start", "continue", "agree", "yes", "proceed", "confirm", "okay", "sure", "stop", "cancel", "no need")) {
             if (-not $ruleBlock.Contains($authorizationWord)) {
-                Add-Failure "用户级规则缺少授权或撤回词：$authorizationWord"
+                Add-Failure "The user-level rule is missing this authorization or withdrawal word: $authorizationWord"
             }
         }
     }
@@ -127,5 +128,5 @@ if ($failures.Count -gt 0) {
 }
 
 Write-Host "INSTALL_VERIFY_OK"
-Write-Host "规则区块、模板和 Skill 完整且未发现重复区块。"
+Write-Host "The rule block, template, and Skill are complete; no duplicate block was found."
 exit 0

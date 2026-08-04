@@ -23,7 +23,7 @@ function Resolve-CodexHome {
 
     $userProfile = [Environment]::GetFolderPath("UserProfile")
     if ([string]::IsNullOrWhiteSpace($userProfile)) {
-        throw "无法确定当前用户目录，未执行安装。"
+        throw "Unable to determine the current user profile; installation was not performed."
     }
 
     return (Join-Path $userProfile ".codex")
@@ -66,17 +66,17 @@ function Test-ObviousCredentialPattern {
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $templatePath = Join-Path $repoRoot "templates\AGENTS.md"
 if (-not (Test-Path -LiteralPath $templatePath -PathType Leaf)) {
-    throw "规则模板不存在，未执行安装。"
+    throw "The rule template does not exist; installation was not performed."
 }
 
 $userCodexHome = Resolve-CodexHome -RequestedHome $CodexHome
 $targetPath = Join-Path $userCodexHome "AGENTS.md"
 
-Write-Host "目标用户级配置：$targetPath"
-Write-Host "脚本只会合并明确标记的规则区块，不会联网或修改项目源码。"
-$confirmation = Read-Host "输入 INSTALL 继续，输入其他内容取消"
+Write-Host "Target user-level configuration: $targetPath"
+Write-Host "The script only merges the explicitly marked rule block. It does not access the network or modify project source."
+$confirmation = Read-Host "Type INSTALL to continue; type anything else to cancel"
 if ($confirmation -ine "INSTALL") {
-    Write-Host "已取消，未修改任何文件。"
+    Write-Host "Canceled. No files were changed."
     exit 2
 }
 
@@ -84,7 +84,7 @@ $templateContent = [System.IO.File]::ReadAllText($templatePath, $utf8Strict)
 $blockPattern = "(?s)" + [regex]::Escape($startMarker) + ".*?" + [regex]::Escape($endMarker)
 $templateMatches = [regex]::Matches($templateContent, $blockPattern)
 if ($templateMatches.Count -ne 1) {
-    throw "规则模板必须包含且只能包含一个完整标记区块，未执行安装。"
+    throw "The rule template must contain exactly one complete marked block; installation was not performed."
 }
 
 $ruleBlock = $templateMatches[0].Value.Trim()
@@ -94,13 +94,13 @@ $existingContent = ""
 if ($targetExists) {
     $existingContent = [System.IO.File]::ReadAllText($targetPath, $utf8Strict)
     if (Test-ObviousCredentialPattern -Content $existingContent) {
-        throw "目标 AGENTS.md 包含疑似凭据格式。为避免复制或覆盖敏感内容，安装已停止；请先人工审查。"
+        throw "The target AGENTS.md contains a suspected credential pattern. Installation stopped to avoid copying or overwriting sensitive content; review it manually first."
     }
 }
 
 $existingMatches = [regex]::Matches($existingContent, $blockPattern)
 if ($existingMatches.Count -gt 1) {
-    throw "目标 AGENTS.md 已包含多个规则区块。为避免破坏用户内容，安装已停止。"
+    throw "The target AGENTS.md contains multiple rule blocks. Installation stopped to avoid damaging user content."
 }
 
 if (-not (Test-Path -LiteralPath $userCodexHome -PathType Container)) {
@@ -110,7 +110,7 @@ if (-not (Test-Path -LiteralPath $userCodexHome -PathType Container)) {
 if ($targetExists) {
     $backupPath = Get-BackupPath -Target $targetPath
     Copy-Item -LiteralPath $targetPath -Destination $backupPath
-    Write-Host "已创建备份：$backupPath"
+    Write-Host "Backup created: $backupPath"
 }
 
 if ($existingMatches.Count -eq 1) {
@@ -139,5 +139,5 @@ else {
 }
 
 [System.IO.File]::WriteAllText($targetPath, $newContent, [System.Text.UTF8Encoding]::new($false))
-Write-Host "执行前确认规则已安装到用户级 AGENTS.md。"
+Write-Host "The pre-execution confirmation rule was installed in the user-level AGENTS.md."
 exit 0

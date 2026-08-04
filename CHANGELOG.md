@@ -1,19 +1,26 @@
 # Changelog
 
-本文件记录面向公开分享的版本变化。
+This file records changes to the public distribution.
+
+## [0.1.1] - 2026-08-04
+
+### Changed
+
+- Translated the public README, Skill, template, and PowerShell messages to English.
+- Kept the repository and Skill name as `pre-execution-confirmation-yct`.
 
 ## [0.1.0] - 2026-08-02
 
 ### Added
 
-- 添加执行前确认规则的公开说明。
-- 添加 `pre-execution-confirmation-yct` Skill。
-- 添加可复制到用户级 `AGENTS.md` 的规则模板。
-- 添加带交互确认、时间戳备份和幂等合并能力的本机安装脚本。
-- 添加只读安装验证脚本。
-- 添加 MIT License。
+- Added public documentation for the pre-execution confirmation rule.
+- Added the `pre-execution-confirmation-yct` Skill.
+- Added a copyable user-level `AGENTS.md` rule template.
+- Added an interactive local installer with timestamped backups and idempotent block merging.
+- Added a read-only installation verification script.
+- Added an MIT license.
 
 ### Security
 
-- 安装脚本默认不联网、不连接服务器、不安装插件、不修改项目源码。
-- 安装脚本不输出或复制凭据；发现明显凭据格式时停止处理目标配置。
+- The installer does not connect to the network, connect to servers, install plugins, or modify project source.
+- The installer does not print or copy credentials and stops when it detects obvious credential formats.
