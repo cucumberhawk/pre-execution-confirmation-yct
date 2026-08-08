@@ -2,6 +2,14 @@
 
 This file records changes to the public distribution.
 
+## [0.5.0] - 2026-08-08
+
+### Fixed
+
+- Prevented the confirmation Skill from re-triggering after context compression, summary recovery, model switching, or continuation of the same task.
+- Added explicit pending, authorized, withdrawn, and completed request-state handling for continuation events.
+- Updated the Skill launcher hint and verifier to recognize continuation behavior.
+
 ## [0.4.0] - 2026-08-08
 
 ### Changed

@@ -93,6 +93,18 @@ After the user confirms, the root-agent request enters execution state. Context 
 
 Only a new user message can redirect, pause, cancel, narrow, or expand the current task.
 
+## Continuation and Context Recovery
+
+Treat context compression, summary recovery, model switching, and continuation of the same task as continuation events, not as new user requests. Do not re-trigger this Skill or emit a second confirmation message during these events.
+
+Preserve the root-agent request state across continuation events:
+
+- `pending_confirmation`: keep waiting for the user's authorization; do not send a duplicate confirmation message.
+- `authorized_execution`: continue within the already approved scope; do not ask for confirmation again.
+- `withdrawn` or `completed`: do not resume the request unless a new user request arrives.
+
+Only a new user message can change the request state. If that message changes, expands, or materially narrows the scope, apply the scope-change confirmation rule again.
+
 ## Safety Boundaries
 
 - Preserve user changes and unrelated files.

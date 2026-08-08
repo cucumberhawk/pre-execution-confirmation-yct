@@ -43,6 +43,15 @@ The public distribution stays in English, but runtime replies follow the user:
 - Translate the three confirmation labels as well; do not force the English labels on users who are communicating in another language.
 - Keep code, command names, file paths, API names, exact protocol values, and literal authorization keywords unchanged when they must remain exact; translate the surrounding explanation.
 
+## Continuation Behavior
+
+Context compression, summary recovery, model switching, and continuation of the same task do not count as new user requests. The Skill preserves the request state and does not repeat the confirmation message during these continuation events.
+
+- A pending confirmation remains pending without a duplicate prompt.
+- An authorized task continues within its approved scope without another confirmation.
+- A withdrawn or completed task does not resume unless the user sends a new request.
+- A new user message that changes scope requires a fresh confirmation.
+
 ## Project Structure
 
 ```text
@@ -94,6 +103,7 @@ The verification script checks:
 - whether the rule start and end markers occur exactly once;
 - whether the rule is root-agent-only and explicitly excludes sub-agents;
 - whether user-facing language follows the user's latest meaningful message;
+- whether continuation and context-recovery behavior preserves the request state without retriggering confirmation;
 - whether the rule contains the intent, plan, confirmation question, authorization words, withdrawal words, and scope-change requirements;
 - whether the local Skill and template are complete;
 - whether duplicate rule blocks or conflicting unscoped legacy rules exist.

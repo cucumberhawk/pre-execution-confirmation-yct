@@ -41,5 +41,17 @@ If the user changes the target, project, account, environment, or other external
 
 After confirmation, context compression, summary recovery, model changes, and environment metadata do not automatically revoke the root agent's authorization for the approved scope. Only a new user message can redirect, pause, cancel, narrow, or expand the current task.
 
+## Continuation and Context Recovery
+
+Treat context compression, summary recovery, model switching, and continuation of the same task as continuation events, not as new user requests. Do not re-trigger this rule or send a second confirmation message during these events.
+
+Preserve the root-agent request state across continuation events:
+
+- `pending_confirmation`: keep waiting for the user's authorization; do not send a duplicate confirmation message.
+- `authorized_execution`: continue within the already approved scope; do not ask for confirmation again.
+- `withdrawn` or `completed`: do not resume the request unless a new user request arrives.
+
+Only a new user message can change the request state. If that message changes, expands, or materially narrows the scope, apply the scope-change confirmation rule again.
+
 The rule does not expand project, account, environment, or external-object scope. The root agent must preserve user changes and unrelated files, and must not display, copy, or commit passwords, tokens, API keys, cookies, private keys, or other secrets. Destructive, credential, server, deployment, and privacy-sensitive actions require confirmation of the exact target and scope. Sub-agents must report scope expansion or ambiguity to the root agent instead of asking the user to repeat this rule.
 <!-- END CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->

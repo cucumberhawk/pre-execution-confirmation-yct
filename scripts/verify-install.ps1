@@ -76,10 +76,15 @@ else {
         "## Authorization and Withdrawal",
         "## Scope Changes",
         "## Authorization Persistence",
+        "## Continuation and Context Recovery",
         "Render the three confirmation labels in the user's latest meaningful language",
         "start, continue, agree, yes, proceed, confirm, okay, sure",
         "stop, cancel, no need",
-        "Context compression, summary recovery, model changes"
+        "Do not re-trigger this Skill or emit a second confirmation message",
+        "pending_confirmation",
+        "authorized_execution",
+        "withdrawn",
+        "completed"
     )
 
     foreach ($requirement in $skillRequirements) {
@@ -114,7 +119,13 @@ else {
             "Before the user explicitly confirms, the root agent must not call tools",
             "If the user changes, expands, or materially narrows the root-agent request before confirmation",
             "If the user changes the target, project, account, environment, or other external scope during root-agent execution",
-            "After confirmation, context compression, summary recovery, model changes"
+            "After confirmation, context compression, summary recovery, model changes",
+            "## Continuation and Context Recovery",
+            "Do not re-trigger this rule or send a second confirmation message",
+            "pending_confirmation",
+            "authorized_execution",
+            "withdrawn",
+            "completed"
         )
 
         foreach ($requirement in $ruleRequirements) {
