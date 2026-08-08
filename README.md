@@ -1,96 +1,147 @@
 # pre-execution-confirmation-yct
 
-An open, cross-agent confirmation gate for AI coding assistants. After receiving an instruction, the agent first restates what the user asked for and explains its own understanding before touching the code. This catches misunderstandings early, reduces rework, and helps prevent the frustration of discovering at the end of a long task that the AI misunderstood the request from the beginning.
+An open, reusable distribution project for requiring explicit user confirmation from the root, user-facing agent before it performs tools, file operations, searches, browsing, or other external actions.
 
-## Why use it?
+This project provides:
 
-AI coding agents can begin changing a project based on a mistaken interpretation of the request. The real cost often appears much later: a long task is finished, only to reveal that the agent misunderstood the user's intent from the start. This Skill creates a deliberate boundary between **understanding** and **execution**.
+- `skills/pre-execution-confirmation-yct/SKILL.md`: the reusable Codex Skill.
+- `templates/AGENTS.md`: a copyable rule block for a user-level `AGENTS.md`.
+- `scripts/`: local installation and verification scripts.
 
-Benefits:
+The existing `tmp/` directory and `RECOVERY_STATUS.md` are preserved recovery artifacts. They are not required by this distribution and are not modified by the installation script.
 
-- Prevents accidental file changes, deletion, installation, publishing, or deployment.
-- Makes the agent's interpretation visible before work starts.
-- Gives the user an opportunity to correct misunderstandings before code is changed.
-- Gives the user one clear approval point for consequential operations.
-- Reduces ambiguity when a message mixes discussion and execution.
-- Preserves authorization after context compression or a model handoff.
-- Works as a lightweight human-in-the-loop layer for long-running tasks.
-- Does not require a runtime dependency, API key, database, or service.
-- Can be combined with a task-progress Skill such as an execution anchor.
+## Scope
 
-## What it does
+Use this project when an agent should request explicit authorization before:
 
-For an action request, the agent must first reply with:
+- calling tools or external connectors;
+- reading, creating, changing, moving, or deleting files;
+- searching, browsing, or accessing external services;
+- generating deliverables, sending messages, or creating tasks;
+- changing code, configuration, or other external state.
 
-```text
-Intent understood: Restate the requested outcome and important constraints.
-Plan: Explain the plan, recommendation, trade-offs, or risks.
-Should I start?
-```
+This is a user-level behavior rule, not a plugin. It does not install itself, replace project-specific safeguards, or grant permissions.
 
-The agent must wait for an explicit approval such as `start`, `continue`, `agree`, `yes`, `proceed`, `confirm`, `okay`, or `sure`.
+## Agent Scope
 
-The agent must ask again if the user changes the scope before approval. `stop`, `cancel`, and `no need` withdraw the pending request.
+The confirmation gate is intentionally root-agent only:
 
-After approval, context compression, summary recovery, model changes, and environment metadata do not revoke authorization for the already-approved scope.
+- The root agent, which directly receives the user's request, asks for confirmation before execution.
+- Sub-agents are explicitly excluded and must not repeat the confirmation or wait for another user reply.
+- Sub-agents continue to follow their existing system, project, and task-specific instructions.
+- This exclusion does not grant permissions or allow a sub-agent to expand the assigned scope.
 
-## What it does not do
+This distinction avoids a deadlock where the root agent is authorized but every delegated sub-agent pauses for a second confirmation.
 
-- It does not persist a full task plan or progress log by itself.
-- It does not replace project memory, tests, permissions, or deployment safeguards.
-- It does not guarantee safe behavior when the host agent ignores loaded instructions.
-- It does not require confirmation for pure explanations, conceptual discussion, or clarifying questions that do not start an operation.
+## Language Behavior
 
-## Install
+The public distribution stays in English, but runtime replies follow the user:
 
-The Skill is the directory at:
+- Use the language of the user's latest meaningful message for confirmation messages, progress updates, final results, errors, and summaries of sub-agent work.
+- If the user switches languages, follow the latest language choice.
+- Do not force English because the repository and Skill files are English.
+- Translate the three confirmation labels as well; do not force the English labels on users who are communicating in another language.
+- Keep code, command names, file paths, API names, exact protocol values, and literal authorization keywords unchanged when they must remain exact; translate the surrounding explanation.
 
-```text
-skills/pre-execution-confirmation-yct/
-```
+## Continuation Behavior
 
-Copy that directory into the Skill directory supported by your agent. For Codex, install it under:
+Context compression, summary recovery, model switching, and continuation of the same task do not count as new user requests. The Skill preserves the request state and does not repeat the confirmation message during these continuation events.
 
-```text
-~/.codex/skills/pre-execution-confirmation-yct/
-```
+- A pending confirmation remains pending without a duplicate prompt.
+- An authorized task continues within its approved scope without another confirmation.
+- A withdrawn or completed task does not resume unless the user sends a new request.
+- A new user message that changes scope requires a fresh confirmation.
 
-Then restart or refresh the agent so it can discover the Skill.
-
-## Recommended pairing
-
-Use this Skill together with a durable task-progress workflow for long tasks:
+## Project Structure
 
 ```text
-pre-execution-confirmation-yct
-+
-execution-anchor or an equivalent task journal
+skills/
+`-- pre-execution-confirmation-yct/
+    |-- SKILL.md
+    `-- agents/
+        `-- openai.yaml
+templates/
+`-- AGENTS.md
+scripts/
+|-- install-global-rule.ps1
+`-- verify-install.ps1
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+README.md
+.gitignore
 ```
 
-The confirmation Skill answers **"Has the user authorized this action?"**. A task journal answers **"Which approved step is currently in progress?"**. Keep those responsibilities separate.
+## Installation
 
-## Examples
+The installer changes only local user configuration. It does not connect to a server or modify the project source. The target file is:
 
-### Action request
+1. `CODEX_HOME\AGENTS.md` when `CODEX_HOME` is set;
+2. otherwise `.codex\AGENTS.md` under the current Windows user's profile directory.
 
-User: `Inspect this project and fix the homepage issues.`
+From the project root, run:
 
-Agent: ask for confirmation first, then wait.
+```powershell
+.\scripts\install-global-rule.ps1
+```
 
-### Pure explanation
+The script prints the target path and requires the user to type `INSTALL`. If the target `AGENTS.md` exists, the script creates a timestamped backup and merges only the explicitly marked rule block. Repeated runs do not append duplicate blocks.
 
-User: `Why does this error occur?`
+The installer does not modify the current project's source files, recovery artifacts, tool snapshots, or images.
 
-Agent: explain the cause directly; no execution gate is needed unless the user asks for a change.
+## Verification
 
-### Scope change
+After installation, run:
 
-User approves a code review, then asks to deploy the fix. The deployment is a new consequential action and requires a new confirmation.
+```powershell
+.\scripts\verify-install.ps1
+```
 
-## Naming convention
+The verification script checks:
 
-The `-yct` suffix identifies Skills published by this author. New Skills in this author's collection should use a lowercase, hyphenated name followed by `-yct`.
+- whether the user-level `AGENTS.md` exists;
+- whether the rule start and end markers occur exactly once;
+- whether the rule is root-agent-only and explicitly excludes sub-agents;
+- whether user-facing language follows the user's latest meaningful message;
+- whether continuation and context-recovery behavior preserves the request state without retriggering confirmation;
+- whether the rule contains the intent, plan, confirmation question, authorization words, withdrawal words, and scope-change requirements;
+- whether the local Skill and template are complete;
+- whether duplicate rule blocks or conflicting unscoped legacy rules exist.
 
-## License
+The verification script is read-only and does not print the body of `AGENTS.md`.
 
-MIT. See [LICENSE](LICENSE).
+## Uninstallation
+
+Remove only the content between these markers. Keep all other user content in `AGENTS.md`:
+
+```text
+<!-- BEGIN CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->
+...
+<!-- END CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->
+```
+
+Keep installer backups until the result is confirmed. Do not use recursive deletion commands against the user configuration directory.
+
+## Security Notes
+
+- The installer requires interactive confirmation and does not silently overwrite configuration.
+- Existing target files are backed up before changes.
+- Only the marked rule block is merged; content outside the block is preserved.
+- The scripts do not connect to the network, install plugins, or modify project source.
+- The scripts do not print, copy, or commit passwords, tokens, API keys, cookies, private keys, or other secrets.
+- Do not publish a user-level `AGENTS.md`, its backups, or environment files to a public repository.
+- If the user changes the target, scope, project, account, environment, or constraints, request confirmation again.
+- Do not apply this confirmation gate to sub-agents launched by an authorized root agent.
+
+## Publishing to GitHub
+
+Before publishing:
+
+1. Review `git diff` and the file list.
+2. Confirm that no environment files, backup configuration, credentials, or machine-specific paths are included.
+3. Run the documentation and PowerShell static checks.
+4. Initialize or connect the repository only after the project boundary is confirmed.
+5. Use a clear commit message, such as `feat: publish pre-execution confirmation rule bundle`.
+6. Create a version tag only after the published contents are reviewed.
+
+The local installer does not initialize Git, create commits, or push to GitHub automatically.
