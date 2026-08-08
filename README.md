@@ -1,6 +1,6 @@
 # pre-execution-confirmation-yct
 
-An open, reusable distribution project for requiring explicit user confirmation before an agent performs tools, file operations, searches, browsing, or other external actions.
+An open, reusable distribution project for requiring explicit user confirmation from the root, user-facing agent before it performs tools, file operations, searches, browsing, or other external actions.
 
 This project provides:
 
@@ -21,6 +21,27 @@ Use this project when an agent should request explicit authorization before:
 - changing code, configuration, or other external state.
 
 This is a user-level behavior rule, not a plugin. It does not install itself, replace project-specific safeguards, or grant permissions.
+
+## Agent Scope
+
+The confirmation gate is intentionally root-agent only:
+
+- The root agent, which directly receives the user's request, asks for confirmation before execution.
+- Sub-agents are explicitly excluded and must not repeat the confirmation or wait for another user reply.
+- Sub-agents continue to follow their existing system, project, and task-specific instructions.
+- This exclusion does not grant permissions or allow a sub-agent to expand the assigned scope.
+
+This distinction avoids a deadlock where the root agent is authorized but every delegated sub-agent pauses for a second confirmation.
+
+## Language Behavior
+
+The public distribution stays in English, but runtime replies follow the user:
+
+- Use the language of the user's latest meaningful message for confirmation messages, progress updates, final results, errors, and summaries of sub-agent work.
+- If the user switches languages, follow the latest language choice.
+- Do not force English because the repository and Skill files are English.
+- Translate the three confirmation labels as well; do not force the English labels on users who are communicating in another language.
+- Keep code, command names, file paths, API names, exact protocol values, and literal authorization keywords unchanged when they must remain exact; translate the surrounding explanation.
 
 ## Project Structure
 
@@ -71,9 +92,11 @@ The verification script checks:
 
 - whether the user-level `AGENTS.md` exists;
 - whether the rule start and end markers occur exactly once;
+- whether the rule is root-agent-only and explicitly excludes sub-agents;
+- whether user-facing language follows the user's latest meaningful message;
 - whether the rule contains the intent, plan, confirmation question, authorization words, withdrawal words, and scope-change requirements;
 - whether the local Skill and template are complete;
-- whether duplicate rule blocks exist.
+- whether duplicate rule blocks or conflicting unscoped legacy rules exist.
 
 The verification script is read-only and does not print the body of `AGENTS.md`.
 
@@ -98,6 +121,7 @@ Keep installer backups until the result is confirmed. Do not use recursive delet
 - The scripts do not print, copy, or commit passwords, tokens, API keys, cookies, private keys, or other secrets.
 - Do not publish a user-level `AGENTS.md`, its backups, or environment files to a public repository.
 - If the user changes the target, scope, project, account, environment, or constraints, request confirmation again.
+- Do not apply this confirmation gate to sub-agents launched by an authorized root agent.
 
 ## Publishing to GitHub
 

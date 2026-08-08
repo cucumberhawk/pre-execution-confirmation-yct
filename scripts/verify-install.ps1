@@ -9,6 +9,10 @@ $startMarker = "<!-- BEGIN CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->"
 $endMarker = "<!-- END CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->"
 $utf8Strict = [System.Text.UTF8Encoding]::new($false, $true)
 $failures = New-Object System.Collections.Generic.List[string]
+$legacyUnscopedPatterns = @(
+    "(?i)For every new user request that asks the agent to perform an action",
+    "对于每个要求 Codex 执行操作的新用户请求"
+)
 
 function Resolve-CodexHome {
     param([string]$RequestedHome)
@@ -59,15 +63,20 @@ else {
     $skillContent = [System.IO.File]::ReadAllText($skillPath, $utf8Strict)
     $skillRequirements = @(
         "# Pre-Execution Confirmation YCT",
+        "## Agent Scope",
+        "root, user-facing agent",
+        "Sub-agents are explicitly excluded",
+        "must not repeat the confirmation message or wait for user confirmation",
+        "## Language Policy",
+        "same language as the user's latest meaningful message",
+        "If the user switches languages",
         "## When to Use",
         "## Mandatory Confirmation Format",
         "## Prohibited Before Confirmation",
         "## Authorization and Withdrawal",
         "## Scope Changes",
         "## Authorization Persistence",
-        "Intent understood:",
-        "Plan:",
-        "Should I start?",
+        "Render the three confirmation labels in the user's latest meaningful language",
         "start, continue, agree, yes, proceed, confirm, okay, sure",
         "stop, cancel, no need",
         "Context compression, summary recovery, model changes"
@@ -96,13 +105,16 @@ else {
     else {
         $ruleBlock = $targetMatches[0].Value
         $ruleRequirements = @(
-            "Intent understood:",
-            "Plan:",
-            "Should I start?",
-            "Before confirmation, do not call tools, read or write files, search, browse, generate deliverables, send messages, or create tasks",
-            "If the user changes, expands, or materially narrows the request before confirmation",
-            "If the user changes the target, project, account, environment, or other external scope during execution",
-            "Context compression, summary recovery, model changes"
+            "root, user-facing agent",
+            "Sub-agents are explicitly excluded",
+            "must not inherit, repeat, or enforce this confirmation workflow",
+            "same language as the user's latest meaningful message",
+            "If the user switches languages",
+            "Render these three labels in the user's latest meaningful language",
+            "Before the user explicitly confirms, the root agent must not call tools",
+            "If the user changes, expands, or materially narrows the root-agent request before confirmation",
+            "If the user changes the target, project, account, environment, or other external scope during root-agent execution",
+            "After confirmation, context compression, summary recovery, model changes"
         )
 
         foreach ($requirement in $ruleRequirements) {
@@ -114,6 +126,14 @@ else {
         foreach ($authorizationWord in @("start", "continue", "agree", "yes", "proceed", "confirm", "okay", "sure", "stop", "cancel", "no need")) {
             if (-not $ruleBlock.Contains($authorizationWord)) {
                 Add-Failure "The user-level rule is missing this authorization or withdrawal word: $authorizationWord"
+            }
+        }
+
+        $outsideBlock = [regex]::Replace($targetContent, $blockPattern, "")
+        foreach ($pattern in $legacyUnscopedPatterns) {
+            if ($outsideBlock -match $pattern) {
+                Add-Failure "The user-level AGENTS.md contains a conflicting unscoped legacy confirmation rule outside the marked block."
+                break
             }
         }
     }

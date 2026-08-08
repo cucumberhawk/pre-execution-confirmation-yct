@@ -8,6 +8,10 @@ $ErrorActionPreference = "Stop"
 $startMarker = "<!-- BEGIN CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->"
 $endMarker = "<!-- END CODEX_PRE_EXECUTION_CONFIRMATION_RULE -->"
 $utf8Strict = [System.Text.UTF8Encoding]::new($false, $true)
+$legacyUnscopedPatterns = @(
+    "(?i)For every new user request that asks the agent to perform an action",
+    "对于每个要求 Codex 执行操作的新用户请求"
+)
 
 function Resolve-CodexHome {
     param([string]$RequestedHome)
@@ -63,6 +67,22 @@ function Test-ObviousCredentialPattern {
     return $false
 }
 
+function Test-ConflictingUnscopedRule {
+    param(
+        [string]$Content,
+        [string]$MarkedBlockPattern
+    )
+
+    $outsideBlock = [regex]::Replace($Content, $MarkedBlockPattern, "")
+    foreach ($pattern in $legacyUnscopedPatterns) {
+        if ($outsideBlock -match $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $templatePath = Join-Path $repoRoot "templates\AGENTS.md"
 if (-not (Test-Path -LiteralPath $templatePath -PathType Leaf)) {
@@ -101,6 +121,10 @@ if ($targetExists) {
 $existingMatches = [regex]::Matches($existingContent, $blockPattern)
 if ($existingMatches.Count -gt 1) {
     throw "The target AGENTS.md contains multiple rule blocks. Installation stopped to avoid damaging user content."
+}
+
+if (Test-ConflictingUnscopedRule -Content $existingContent -MarkedBlockPattern $blockPattern) {
+    throw "The target AGENTS.md contains an unscoped legacy confirmation rule outside the marked block. Installation stopped; update or remove that legacy rule manually before installing this root-agent-only version."
 }
 
 if (-not (Test-Path -LiteralPath $userCodexHome -PathType Container)) {
